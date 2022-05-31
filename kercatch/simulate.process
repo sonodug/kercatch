@@ -1,0 +1,4 @@
+u d, u - PNEUMO_CYLINDER_SIGNAL_UP, d - PNEUMO_CYLINDER_SIGNAL_DOWN
+ y1  y2  y3  y4  y5  y6  y7  y8          output
+  |   |   |   |   |   |   |   |               |
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
