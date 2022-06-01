@@ -2,17 +2,13 @@
 #include <limits.h>
 #include "pneumo_fsm.h"
 
-#if defined(PNEUMO_SIMULATE)
+//pric
 
-#define TIMEOUT_DELTA(timeout)  1
-#define DELAY_DELTA(delay)      1
-
-#else
+//#define TIMEOUT_DELTA(timeout)  1
+//#define DELAY_DELTA(delay)      1
 
 #define TIMEOUT_DELTA(timeout)  ((timeout) * 1000)
 #define DELAY_DELTA(delay)      ((delay) * 1000)
-
-#endif
 
 #if defined(PNEUMO_DEBUG)
 static char* state_names[] =
@@ -49,13 +45,13 @@ void pneumocyl_engine_init(struct PneumoEngine* engine)
         engine->state = PneumoState_Init;
         reset_time_params(engine);
 
-        int timeout_deltas[] = { INT_MAX, INT_MAX, TIMEOUT_DELTA(45), TIMEOUT_DELTA(60), TIMEOUT_DELTA(120), TIMEOUT_DELTA(45),
+        int timeout_deltas[] = { INT_MAX, TIMEOUT_DELTA(45), TIMEOUT_DELTA(60), TIMEOUT_DELTA(120), TIMEOUT_DELTA(45),
         TIMEOUT_DELTA(56), TIMEOUT_DELTA(60), TIMEOUT_DELTA(30), TIMEOUT_DELTA(120), TIMEOUT_DELTA(56), TIMEOUT_DELTA(30), TIMEOUT_DELTA(60), 
-        TIMEOUT_DELTA(30), TIMEOUT_DELTA(60), TIMEOUT_DELTA(45), TIMEOUT_DELTA(120), TIMEOUT_DELTA(56), TIMEOUT_DELTA(60) };
+        TIMEOUT_DELTA(30), TIMEOUT_DELTA(60), TIMEOUT_DELTA(45), TIMEOUT_DELTA(120), TIMEOUT_DELTA(56), TIMEOUT_DELTA(60), TIMEOUT_DELTA(60) };
 
-        int delay_deltas[] = { INT_MAX, INT_MAX, DELAY_DELTA(78), DELAY_DELTA(33), DELAY_DELTA(70), DELAY_DELTA(45), DELAY_DELTA(70),
+        int delay_deltas[] = { INT_MAX, DELAY_DELTA(78), DELAY_DELTA(33), DELAY_DELTA(70), DELAY_DELTA(45), DELAY_DELTA(70),
         DELAY_DELTA(60), DELAY_DELTA(33), DELAY_DELTA(78), DELAY_DELTA(78), DELAY_DELTA(45), DELAY_DELTA(33), DELAY_DELTA(70),
-        DELAY_DELTA(60), DELAY_DELTA(70), DELAY_DELTA(45), DELAY_DELTA(78), DELAY_DELTA(45) };
+        DELAY_DELTA(60), DELAY_DELTA(70), DELAY_DELTA(45), DELAY_DELTA(78), DELAY_DELTA(45), DELAY_DELTA(45) };
 
         set_params(engine, timeout_deltas, delay_deltas);
     }
@@ -72,14 +68,32 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         return false;
 
 #if defined(PNEUMO_DEBUG)
-    fprintf(stdout, "State: %s, Y1(in): [%d, %d], Y2(in): [%d, %d], Y1(out): [%d], Y2(out): [%d]\n",
+    fprintf(stdout, "State: %s, Y1(in): [%d, %d], Y2(in): [%d, %d], Y3(in): [%d, %d], Y4(in): [%d, %d], Y5(in): [%d, %d], Y6(in): [%d, %d], Y7(in): [%d, %d], Y8(in): [%d, %d], Y1(out): [%d], Y2(out): [%d], Y3(out): [%d], Y4(out): [%d], Y5(out): [%d], Y6(out): [%d], Y7(out): [%d], Y8(out): [%d]\n",
         state_names[engine->state],
-        engine->cylinders[PNEUMO_CYLINDER_Y1].input_signal[PNEUMO_CYLINDER_SIGNAL_DOWN],
-        engine->cylinders[PNEUMO_CYLINDER_Y1].input_signal[PNEUMO_CYLINDER_SIGNAL_UP],
-        engine->cylinders[PNEUMO_CYLINDER_Y2].input_signal[PNEUMO_CYLINDER_SIGNAL_DOWN],
-        engine->cylinders[PNEUMO_CYLINDER_Y2].input_signal[PNEUMO_CYLINDER_SIGNAL_UP],
-        engine->cylinders[PNEUMO_CYLINDER_Y1].output_signal,
-        engine->cylinders[PNEUMO_CYLINDER_Y2].output_signal
+        engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y3].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y3].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y4].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y4].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y5].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y5].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y7].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y7].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+        engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
+        engine->cylinders[PNEUMOCYL_Y1].outputSignal,
+        engine->cylinders[PNEUMOCYL_Y2].outputSignal,
+        engine->cylinders[PNEUMOCYL_Y3].outputSignal,
+        engine->cylinders[PNEUMOCYL_Y4].outputSignal,
+        engine->cylinders[PNEUMOCYL_Y5].outputSignal,
+        engine->cylinders[PNEUMOCYL_Y6].outputSignal,
+        engine->cylinders[PNEUMOCYL_Y7].outputSignal,
+        engine->cylinders[PNEUMOCYL_Y8].outputSignal
     );
     fflush(stdout);
 #endif
@@ -112,6 +126,11 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
                     engine->state = PneumoState_2;
                     reset_time_params(engine);
                 }
+            }
+            else if (TIMEOUT_GE(engine))
+            {
+                engine->state = PneumoState_Exception;
+                reset_time_params(engine);
             }
 
             break;
@@ -474,8 +493,8 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
                 engine->cylinders[PNEUMOCYL_Y4].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y5].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
-                engine->cylinders[PNEUMOCYL_Y7].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
-                engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP])
+                engine->cylinders[PNEUMOCYL_Y7].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
+                engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN])
             {
                 engine->timeout = 0;
 
@@ -539,36 +558,6 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
 
             break;
         }
-        case PneumoState_17:
-        {
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-
-            if (engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
-                engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
-                engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
-                engine->cylinders[PNEUMOCYL_Y3].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
-                engine->cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP])
-            {
-                engine->timeout = 0;
-
-                if (DELAY_GE(engine))
-                {
-                    engine->state = PneumoState_18;
-                    reset_time_params(engine);
-                }
-            }
-            else if (TIMEOUT_GE(engine))
-            {
-                engine->state = PneumoState_Exception;
-                reset_time_params(engine);
-            }
-
-            break;
-        }
         case PneumoState_16:
         {
             engine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
@@ -605,7 +594,36 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
 
             break;
         }
+        case PneumoState_17:
+        {
+            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
 
+            if (engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
+                engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
+                engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
+                engine->cylinders[PNEUMOCYL_Y3].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
+                engine->cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP])
+            {
+                engine->timeout = 0;
+
+                if (DELAY_GE(engine))
+                {
+                    engine->state = PneumoState_18;
+                    reset_time_params(engine);
+                }
+            }
+            else if (TIMEOUT_GE(engine))
+            {
+                engine->state = PneumoState_Exception;
+                reset_time_params(engine);
+            }
+
+            break;
+        }
         case PneumoState_18:
         {
             engine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
@@ -616,7 +634,7 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
 
                 if (DELAY_GE(engine))
                 {
-                    engine->state = PneumoState_Init;
+                    engine->state = PneumoState_1;
                     reset_time_params(engine);
                 }
             }

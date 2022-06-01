@@ -35,10 +35,6 @@ int main(int argc, char** argv)
                 running = false;
                 continue;
             }
-
-            fscanf(fd, "%*[^\n]");
-            fscanf(fd, "%*[^\n]");
-            fscanf(fd, "%*[^\n]");
             
             fscanf(fd, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
                 (int*)&engine.cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
