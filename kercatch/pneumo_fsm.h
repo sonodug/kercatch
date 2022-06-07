@@ -34,10 +34,12 @@ extern "C" {
 #define PNEUMO_CYLINDER_SIGNAL_UP     0
 #define PNEUMO_CYLINDER_SIGNAL_DOWN   1
 
+    static int exceptionOutputSignal = 0;
+
     struct PneumoCylinder
     {
         int inputSignals[2];
-        int outputSignal;
+        int cylinderOutputSignal;
     };
 
 #define PNEUMOCYL_Y1 0

@@ -38,7 +38,7 @@ static char* state_names[] =
 
 void pneumocyl_engine_init(struct PneumoEngine* engine)
 {
-    if (0 != engine)
+    if (engine)
     {
         reset_signals(engine);
 
@@ -64,7 +64,7 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
 {
     bool execution_flag = true;
 
-    if (engine == 0)
+    if (!engine)
         return false;
 
 #if defined(PNEUMO_DEBUG)
@@ -137,13 +137,13 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_2:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
@@ -171,13 +171,13 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_3:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y7].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
@@ -205,7 +205,7 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_4:
         {
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP])
             {
@@ -227,12 +227,12 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_5:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
@@ -259,12 +259,12 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_6:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y7].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y7].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
@@ -291,14 +291,14 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_7:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y7].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
@@ -328,10 +328,10 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_8:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
@@ -356,14 +356,14 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_9:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y7].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y7].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
@@ -392,9 +392,9 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_10:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
@@ -418,11 +418,11 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_11:
         {
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y3].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
@@ -448,11 +448,11 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_12:
         {
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y7].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
                 engine->cylinders[PNEUMOCYL_Y4].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
@@ -478,14 +478,14 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_13:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y7].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y7].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
@@ -514,8 +514,8 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_14:
         {
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y5].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN])
@@ -538,7 +538,7 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_15:
         {
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y4].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN])
             {
@@ -560,14 +560,14 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_16:
         {
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            engine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y4].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y5].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y7].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
                 engine->cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] &&
@@ -596,11 +596,11 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_17:
         {
-            engine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y8].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y1].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y2].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y3].cylinderOutputSignal = 1;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 1;
 
             if (engine->cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
                 engine->cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] &&
@@ -626,7 +626,7 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         }
         case PneumoState_18:
         {
-            engine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
+            engine->cylinders[PNEUMOCYL_Y6].cylinderOutputSignal = 0;
 
             if (engine->cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN])
             {
@@ -649,6 +649,7 @@ bool pneumocyl_engine_tick(struct PneumoEngine* engine)
         case PneumoState_Exception:
         {
             reset_output_signals(engine);
+            exceptionOutputSignal = 1;
             execution_flag = false;
 
             break;
@@ -675,7 +676,8 @@ void reset_signals(struct PneumoEngine* engine)
     {
         engine->cylinders[i].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP] = 0;
         engine->cylinders[i].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN] = 0;
-        engine->cylinders[i].outputSignal = 0;
+        engine->cylinders[i].cylinderOutputSignal = 0;
+        exceptionOutputSignal = 0;
     }
 }
 
@@ -683,7 +685,7 @@ void reset_output_signals(struct PneumoEngine* engine)
 {
     for (int i = 0; i < 8; i++)
     {
-        engine->cylinders[i].outputSignal = 0;
+        engine->cylinders[i].cylinderOutputSignal = 0;
     }
 }
 

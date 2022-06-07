@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     fprintf(stdout, "‘айл симул€ции передан: \"%s\"\n", argv[1]);
     fd = fopen(argv[1], "rt");
 
-    if (0 != fd)
+    if (fd)
     {
         struct PneumoEngine engine;
         bool running = true;
