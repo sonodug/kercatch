@@ -21,10 +21,10 @@ int main(int argc, char** argv)
 
     if (fd)
     {
-        struct PneumoEngine engine;
+        struct Machine engine;
         bool running = true;
 
-        pneumocyl_engine_init(&engine);
+        pneumocyl_machine_init(&engine);
         while (running)
         {
             int eq_output[8];
@@ -37,22 +37,22 @@ int main(int argc, char** argv)
             }
             
             fscanf(fd, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
-                (int*)&engine.cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y1].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
-                (int*)&engine.cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y2].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
-                (int*)&engine.cylinders[PNEUMOCYL_Y3].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y3].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
-                (int*)&engine.cylinders[PNEUMOCYL_Y4].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y4].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
-                (int*)&engine.cylinders[PNEUMOCYL_Y5].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y5].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
-                (int*)&engine.cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y6].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
-                (int*)&engine.cylinders[PNEUMOCYL_Y7].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y7].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
-                (int*)&engine.cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_UP],
-                (int*)&engine.cylinders[PNEUMOCYL_Y8].inputSignals[PNEUMO_CYLINDER_SIGNAL_DOWN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MIN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MIN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MIN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MIN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MIN],
+                (int*)&engine.cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MAX],
+                (int*)&engine.cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MIN],
                 (int*)&eq_output[PNEUMOCYL_Y1],
                 (int*)&eq_output[PNEUMOCYL_Y2],
                 (int*)&eq_output[PNEUMOCYL_Y3],
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
                 (int*)&eq_output[PNEUMOCYL_Y7],
                 (int*)&eq_output[PNEUMOCYL_Y8]
             );
-            running = pneumocyl_engine_tick(&engine);
+            running = pneumocyl_machine_tick(&engine);
            
             if (!running)
             {
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
             }
         }
 
-        pneumocyl_engine_destroy(&engine);
+        pneumocyl_machine_destroy(&engine);
     }
     if (0 != fd)
     {

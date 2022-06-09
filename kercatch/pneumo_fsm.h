@@ -7,10 +7,9 @@
 extern "C" {
 #endif
 
-    enum PneumoState
+    enum State
     {
-        PneumoState_Init = 0,
-        PneumoState_1,
+        PneumoState_1 = 0,
         PneumoState_2,
         PneumoState_3,
         PneumoState_4,
@@ -31,15 +30,13 @@ extern "C" {
         PneumoState_Exception
     };
 
-#define PNEUMO_CYLINDER_SIGNAL_UP     0
-#define PNEUMO_CYLINDER_SIGNAL_DOWN   1
+#define SIGNAL_MAX  0
+#define SIGNAL_MIN  1
 
-    static int exceptionOutputSignal = 0;
-
-    struct PneumoCylinder
+    struct CylinderIO
     {
         int inputSignals[2];
-        int cylinderOutputSignal;
+        int outputSignal;
     };
 
 #define PNEUMOCYL_Y1 0
@@ -51,32 +48,33 @@ extern "C" {
 #define PNEUMOCYL_Y7 6
 #define PNEUMOCYL_Y8 7
 
-    struct PneumoEngine
+    struct Machine
     {
-        enum PneumoState state;
+        enum State state;
+        int exceptionInputSignal;
         int timeout;
         int delay;
         int timeouts[PneumoState_Exception];
         int delays[PneumoState_Exception];
-        struct PneumoCylinder cylinders[8];
+        struct CylinderIO cylinders[8];
     };
 
-    void pneumocyl_engine_init(struct PneumoEngine* engine);
+    void pneumocyl_machine_init(struct Machine* machine);
 
-    bool pneumocyl_engine_tick(struct PneumoEngine* engine);
+    bool pneumocyl_machine_tick(struct Machine* machine);
 
-    void pneumocyl_engine_destroy(struct PneumoEngine* engine);
+    void pneumocyl_machine_destroy(struct Machine* machine);
 
-    void reset_signals(struct PneumoEngine* engine);
+    void reset_signals(struct Machine* machine);
 
-    void reset_output_signals(struct PneumoEngine* engine);
+    void reset_output_signals(struct Machine* machine);
 
-    void reset_time_params(struct PneumoEngine* engine);
+    void reset_time_params(struct Machine* machine);
 
-    void set_params(struct PneumoEngine* engine, int* timeout_delta, int* delay_delta);
+    void set_params(struct Machine* machine, int* timeoutDel, int* delayDel);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif //PNEUMO_CTRL_H
+#endif
