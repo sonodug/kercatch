@@ -1,43 +1,11 @@
-#ifndef PNEUMO_CTRL_H
-#define PNEUMO_CTRL_H
+#ifndef PNEUMO_FSM_H
+#define PNEUMO_FSM_H
 
 #include <stdbool.h>
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-    enum State
-    {
-        PneumoState_1 = 0,
-        PneumoState_2,
-        PneumoState_3,
-        PneumoState_4,
-        PneumoState_5,
-        PneumoState_6,
-        PneumoState_7,
-        PneumoState_8,
-        PneumoState_9,
-        PneumoState_10,
-        PneumoState_11,
-        PneumoState_12,
-        PneumoState_13,
-        PneumoState_14,
-        PneumoState_15,
-        PneumoState_16,
-        PneumoState_17,
-        PneumoState_18,
-        PneumoState_Exception
-    };
-
-#define SIGNAL_MAX  0
-#define SIGNAL_MIN  1
-
-    struct CylinderIO
-    {
-        int inputSignals[2];
-        int outputSignal;
-    };
 
 #define PNEUMOCYL_Y1 0
 #define PNEUMOCYL_Y2 1
@@ -48,15 +16,44 @@ extern "C" {
 #define PNEUMOCYL_Y7 6
 #define PNEUMOCYL_Y8 7
 
-    struct Machine
-    {
+#define SIGNAL_MAX  0
+#define SIGNAL_MIN  1
+
+    enum State {
+        State_0,
+        State_1,
+        State_2,
+        State_3,
+        State_4,
+        State_5,
+        State_6,
+        State_7,
+        State_8,
+        State_9,
+        State_10,
+        State_11,
+        State_12,
+        State_13,
+        State_14,
+        State_15,
+        State_16,
+        State_17,
+        State_Exception
+    };
+
+    struct Cylinder {
+        int input_signals[2];
+        int output_signal;
+    };
+
+    struct Machine {
         enum State state;
-        int exceptionInputSignal;
+        int exception_input_signal;
         int timeout;
         int delay;
-        int timeouts[PneumoState_Exception];
-        int delays[PneumoState_Exception];
-        struct CylinderIO cylinders[8];
+        int timeouts[State_Exception];
+        int delays[State_Exception];
+        struct Cylinder cylinders[8];
     };
 
     void pneumocyl_machine_init(struct Machine* machine);
@@ -71,7 +68,7 @@ extern "C" {
 
     void reset_time_params(struct Machine* machine);
 
-    void set_params(struct Machine* machine, int* timeoutDel, int* delayDel);
+    void set_params(struct Machine* machine, int* timeout_del, int* delay_del);
 
 #if defined(__cplusplus)
 }

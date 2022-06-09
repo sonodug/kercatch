@@ -5,13 +5,14 @@
 #define TOUT_DEL(timeout)  ((timeout) * 1000)
 #define D_DEL(delay)      ((delay) * 1000)
 
-void pneumocyl_machine_init(struct Machine* machine)
-{
-    if (machine)
-    {
+#define TOUT_COMP(machine) ( (machine)->timeout > (machine)->timeouts[(machine)->state] )
+#define D_COMP(machine) ( (machine)->delay > (machine)->delays[(machine)->state] )
+
+void pneumocyl_machine_init(struct Machine* machine) {
+    if (machine) {
         reset_signals(machine);
 
-        machine->state = PneumoState_1;
+        machine->state = State_1;
         reset_time_params(machine);
 
         int timeout_deltas[] = { TOUT_DEL(45), TOUT_DEL(60), TOUT_DEL(120), TOUT_DEL(45),
@@ -26,656 +27,576 @@ void pneumocyl_machine_init(struct Machine* machine)
     }
 }
 
-#define TOUT_COMP(machine) ( (machine)->timeout > (machine)->timeouts[(machine)->state] )
-#define D_COMP(machine) ( (machine)->delay > (machine)->delays[(machine)->state] )
-
-bool pneumocyl_machine_tick(struct Machine* machine)
-{
+bool pneumocyl_machine_tick(struct Machine* machine) {
     bool execution_flag = true;
 
     if (machine == 0)
         return false;
 
-    switch (machine->state)
-    {
-        case PneumoState_1:
-        {
-            reset_output_signals(machine);
+    switch (machine->state) {
+    case State_0: {
+        reset_output_signals(machine);
 
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
+            
+            machine->timeout = 0;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_2;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_1;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_2:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_3;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_3:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
 
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
+        break;
+    }
+    case State_1: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 1;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_4;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_7;
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX]) {
+
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_2;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_4:
-        {
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-
-            if (machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_5;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_13;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_5:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
 
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
+        break;
+    }
+    case State_2: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y7].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 0;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_6;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
+           
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_3;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_6:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y7].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
-
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_7;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_7:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
 
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
+        break;
+    }
+    case State_3: {
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 1;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_8;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
+        if (machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX]) {
+            
+            machine->timeout = 0;
 
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_4;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_8:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_9;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_9:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y7].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_7;
+            reset_time_params(machine);
+        }
 
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
+        break;
+    }
+    case State_4: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 1;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_10;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX]) {
+           
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_5;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_10:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_11;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_11:
-        {
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_13;
+            reset_time_params(machine);
+        }
 
-            if (machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
+        break;
+    }
+    case State_5: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y7].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 0;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_12;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
+           
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_6;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_12:
-        {
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
-
-            if (machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_13;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_13:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y7].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
 
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
+        break;
+    }
+    case State_6: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y7].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 1;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_14;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX]) {
+           
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_7;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_14:
-        {
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 0;
-
-            if (machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_15;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_15:
-        {
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 0;
 
-            if (machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_16;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+        break;
+    }
+    case State_7: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 1;
+
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX]) {
+           
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_8;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_16:
-        {
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y4].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y5].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-            machine->cylinders[PNEUMOCYL_Y7].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 0;
-
-            if (machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y4].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y5].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN] &&
-                machine->cylinders[PNEUMOCYL_Y7].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_17;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_17:
-        {
-            machine->cylinders[PNEUMOCYL_Y8].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y1].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y2].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y3].outputSignal = 1;
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 1;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
 
-            if (machine->cylinders[PNEUMOCYL_Y8].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y1].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y2].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y3].inputSignals[SIGNAL_MAX] &&
-                machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MAX])
-            {
-                machine->timeout = 0;
+        break;
+    }
+    case State_8: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y7].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 0;
 
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_18;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
+           
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_9;
                 reset_time_params(machine);
             }
-
-            break;
-        }
-        case PneumoState_18:
-        {
-            machine->cylinders[PNEUMOCYL_Y6].outputSignal = 0;
-
-            if (machine->cylinders[PNEUMOCYL_Y6].inputSignals[SIGNAL_MIN])
-            {
-                machine->timeout = 0;
-
-                if (D_COMP(machine) && !machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_1;
-                    reset_time_params(machine);
-                }
-                else if (machine->exceptionInputSignal)
-                {
-                    machine->state = PneumoState_Exception;
-                    reset_time_params(machine);
-                }
-            }
-            else if (TOUT_COMP(machine))
-            {
-                machine->state = PneumoState_Exception;
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
                 reset_time_params(machine);
             }
-
-            break;
         }
-        case PneumoState_Exception:
-        {
-            reset_output_signals(machine);
-            pneumocyl_machine_destroy(machine);
-            execution_flag = false;
-
-            break;
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
         }
+
+        break;
+    }
+    case State_9: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 1;
+
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MAX]) {
+           
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_10;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_10: {
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 1;
+
+        if (machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX]) {
+            
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_11;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_11: {
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y7].output_signal = 1;
+
+        if (machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MAX]) {
+            
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_12;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_12: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y7].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 0;
+
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
+            
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_13;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_13: {
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 0;
+
+        if (machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MIN]) {
+            
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_14;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_14: {
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 0;
+
+        if (machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MIN]) {
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_15;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_15: {
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y4].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y5].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 0;
+        machine->cylinders[PNEUMOCYL_Y7].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 0;
+
+        if (machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
+            machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
+            
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_16;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_16: {
+        machine->cylinders[PNEUMOCYL_Y8].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y1].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y2].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y3].output_signal = 1;
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 1;
+
+        if (machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y1].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MAX] &&
+            machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX]) {
+            
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_17;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_17: {
+        machine->cylinders[PNEUMOCYL_Y6].output_signal = 0;
+
+        if (machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN]) {
+            machine->timeout = 0;
+
+            if (D_COMP(machine) && !machine->exception_input_signal) {
+                machine->state = State_0;
+                reset_time_params(machine);
+            }
+            else if (machine->exception_input_signal) {
+                machine->state = State_Exception;
+                reset_time_params(machine);
+            }
+        }
+        else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+
+        break;
+    }
+    case State_Exception: {
+        reset_output_signals(machine);
+        pneumocyl_machine_destroy(machine);
+        execution_flag = false;
+
+        break;
+    }
     }
 
     machine->timeout++;
@@ -684,42 +605,33 @@ bool pneumocyl_machine_tick(struct Machine* machine)
 }
 
 
-void pneumocyl_machine_destroy(struct Machine* machine)
-{
-    if (machine != 0)
-    {
+void pneumocyl_machine_destroy(struct Machine* machine) {
+    if (machine != 0) {
         machine = 0;
     }
 }
 
-void reset_signals(struct Machine* machine)
-{
-    for (int i = 0; i < 8; i++)
-    {
-        machine->cylinders[i].inputSignals[SIGNAL_MAX] = 0;
-        machine->cylinders[i].inputSignals[SIGNAL_MIN] = 0;
-        machine->cylinders[i].outputSignal = 0;
+void reset_signals(struct Machine* machine) {
+    for (int i = 0; i < 8; i++) {
+        machine->cylinders[i].input_signals[SIGNAL_MAX] = 0;
+        machine->cylinders[i].input_signals[SIGNAL_MIN] = 0;
+        machine->cylinders[i].output_signal = 0;
     }
 }
 
-void reset_output_signals(struct Machine* machine)
-{
-    for (int i = 0; i < 8; i++)
-    {
-        machine->cylinders[i].outputSignal = 0;
+void reset_output_signals(struct Machine* machine) {
+    for (int i = 0; i < 8; i++) {
+        machine->cylinders[i].output_signal = 0;
     }
 }
 
-void reset_time_params(struct Machine* machine)
-{
+void reset_time_params(struct Machine* machine) {
     machine->delay = 0;
     machine->timeout = 0;
 }
 
-void set_params(struct Machine* machine, int* timeout_delta, int* delay_delta)
-{
-    for (int i = 0; i < PneumoState_Exception; ++i)
-    {
+void set_params(struct Machine* machine, int* timeout_delta, int* delay_delta) {
+    for (int i = 0; i < State_Exception; ++i) {
         machine->timeouts[i] = timeout_delta[i];
         machine->delays[i] = delay_delta[i];
     }
