@@ -2,8 +2,8 @@
 #include <limits.h>
 #include "pneumo_fsm.h"
 
-#define TOUT_DEL(timeout)  ((timeout) * 1000)
-#define D_DEL(delay)      ((delay) * 1000)
+#define TOUT_DEL(timeout)  ((timeout) * 100)
+#define D_DEL(delay)      ((delay) * 100)
 
 #define TOUT_COMP(machine) ( (machine)->timeout > (machine)->timeouts[(machine)->state] )
 #define D_COMP(machine) ( (machine)->delay > (machine)->delays[(machine)->state] )
@@ -12,7 +12,7 @@ void pneumocyl_machine_init(struct Machine* machine) {
     if (machine) {
         reset_signals(machine);
 
-        machine->state = State_1;
+        machine->state = State_0;
         reset_time_params(machine);
 
         int timeout_deltas[] = { TOUT_DEL(45), TOUT_DEL(60), TOUT_DEL(120), TOUT_DEL(45),
@@ -47,17 +47,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_1;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -82,17 +83,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX]) {
 
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_2;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -117,17 +119,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
            
             machine->timeout = 0;
-
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            machine->delay++;
+            
+            if (D_COMP(machine)) {
                 machine->state = State_3;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -140,17 +143,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
         if (machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
-                machine->state = State_4;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
+            if (D_COMP(machine)) {
+                machine->state = State_8;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_7;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_7;
             reset_time_params(machine);
         }
@@ -171,19 +175,19 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
             machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX]) {
-           
+
             machine->timeout = 0;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_5;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_13;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_13;
             reset_time_params(machine);
         }
@@ -204,19 +208,19 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX] &&
             machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MIN] &&
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
-           
+
             machine->timeout = 0;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_6;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -241,20 +245,19 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN] &&
             machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MAX] &&
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MAX]) {
-           
+
             machine->timeout = 0;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_7;
                 reset_time_params(machine);
             }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
-                reset_time_params(machine);
-            }
         }
-
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -271,19 +274,19 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y2].input_signals[SIGNAL_MAX] &&
             machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MAX] &&
             machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX]) {
-           
+
             machine->timeout = 0;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_8;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -310,17 +313,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
            
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_9;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -337,17 +341,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y3].input_signals[SIGNAL_MAX]) {
            
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_10;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -368,17 +373,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_11;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -399,17 +405,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y7].input_signals[SIGNAL_MAX]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_12;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -436,17 +443,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_13;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -461,17 +469,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y5].input_signals[SIGNAL_MIN]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_14;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -482,18 +491,20 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
         machine->cylinders[PNEUMOCYL_Y4].output_signal = 0;
 
         if (machine->cylinders[PNEUMOCYL_Y4].input_signals[SIGNAL_MIN]) {
-            machine->timeout = 0;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            machine->timeout = 0;
+            machine->delay++;
+
+            if (D_COMP(machine)) {
                 machine->state = State_15;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -520,17 +531,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y8].input_signals[SIGNAL_MIN]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_16;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -551,17 +563,18 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
             machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MAX]) {
             
             machine->timeout = 0;
+            machine->delay++;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            if (D_COMP(machine)) {
                 machine->state = State_17;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -572,18 +585,20 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
         machine->cylinders[PNEUMOCYL_Y6].output_signal = 0;
 
         if (machine->cylinders[PNEUMOCYL_Y6].input_signals[SIGNAL_MIN]) {
-            machine->timeout = 0;
 
-            if (D_COMP(machine) && !machine->exception_input_signal) {
+            machine->timeout = 0;
+            machine->delay++;
+
+            if (D_COMP(machine)) {
                 machine->state = State_0;
-                reset_time_params(machine);
-            }
-            else if (machine->exception_input_signal) {
-                machine->state = State_Exception;
                 reset_time_params(machine);
             }
         }
         else if (TOUT_COMP(machine)) {
+            machine->state = State_Exception;
+            reset_time_params(machine);
+        }
+        if (machine->exception_input_signal) {
             machine->state = State_Exception;
             reset_time_params(machine);
         }
@@ -600,7 +615,6 @@ bool pneumocyl_machine_tick(struct Machine* machine) {
     }
 
     machine->timeout++;
-    machine->delay++;
     return execution_flag;
 }
 

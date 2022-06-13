@@ -38,7 +38,7 @@ extern "C" {
         State_15,
         State_16,
         State_17,
-        State_Exception
+        State_Exception,
     };
 
     struct Cylinder {
